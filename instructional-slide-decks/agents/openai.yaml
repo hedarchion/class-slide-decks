@@ -1,0 +1,4 @@
+interface:
+  display_name: "Instructional Slide Decks"
+  short_description: "Build concise interactive teacher-led HTML slides"
+  default_prompt: "Use $instructional-slide-decks to create a teacher-led interactive HTML slide deck about my topic."

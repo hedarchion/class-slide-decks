@@ -1,0 +1,5 @@
+# Local student data: never publish or commit.
+copu_classes_full.json
+
+# Teacher-only lesson notes may contain sensitive classroom information.
+decks/**/notes.md
