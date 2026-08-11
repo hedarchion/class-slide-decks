@@ -45,7 +45,7 @@ Treat the workspace-root [copu_classes_full.json](../copu_classes_full.json) as 
 
 Use these stated language targets unless the user overrides them: **Form 1: A2 Revise**; **Form 2: A2 High**. Adapt vocabulary, sentence frames, reading/listening load, and scaffolding to the target, while differentiating through task design, worked examples, prompts, and optional extension—not public student labels.
 
-When a slide needs a student-name picker, read only the selected class's `roster`, embed that roster locally in the generated deck, and use `templates/teacher-led-html/name-picker.mjs`. Provide a teacher-controlled draw button, no-repeat shuffle bag, reset control, and keyboard access. Show only the drawn name; do not expose scores, tiers, or the full class list in the student-facing UI. Do not fetch the JSON at presentation time, store it remotely, or include other classes' data.
+Do **not** embed real student names, a roster, or the class JSON in any deck that may be committed or published. Use the separate local-only teacher tool at `teacher-tools/name-picker/index.html` for real-name selection. It lets the teacher choose the JSON file on their device, choose a class, draw names without repeats, and reset the draw. Keep the picker in a private laptop window; the public slide may show a neutral prompt or a temporary alias only. Do not fetch the JSON at presentation time, store it remotely, or include other classes' data.
 
 See [references/class-data.md](references/class-data.md) before using class data.
 
@@ -69,6 +69,8 @@ See [references/instructional-design.md](references/instructional-design.md) for
 Remove everything that does not improve the current teaching move: decorative graphics, repeated prose, dense labels, redundant instructions, and generic navigation chrome.
 
 Use visual hierarchy deliberately: one dominant question/task, a small amount of supporting evidence, and a single obvious next action. Prefer diagrams, worked examples, and manipulable representations when they directly support the concept. Ensure readable contrast and large type from the back of the room.
+
+Design for pupils who are nearsighted (`rabun`) as a default: use at least 28 px for student-facing body copy, 34 px for questions, and 38 px for slide titles at the selected viewport. Use dark text on a light solid background or light text on a dark solid background; do not rely on muted gray text, thin strokes, color-only distinctions, or low-opacity surfaces for essential content. Keep answer choices and feedback at the same high-contrast standard.
 
 Use Tailwind CSS for layout, spacing, typography, states, and responsive scaling. Keep custom CSS limited to deck-level scaling, animation timing, and genuinely reusable behavior. Build keyboard navigation (`ArrowLeft`/`ArrowRight`, `Space`) plus visible previous/next controls. Preserve a clear current-slide indicator; do not show a distracting global UI.
 

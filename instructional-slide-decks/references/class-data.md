@@ -14,4 +14,4 @@ For Form 1, target A2 Revise: reactivate familiar language, use short clear mode
 
 ## Name picker data boundary
 
-At build time, select only `classes[requestedClass].roster` and embed it as a local JavaScript array. The completed deck must work offline and contain no full source file, tier data, scores, or other classes' names. Use full names only if the teacher intends to display them; otherwise transform them to the preferred display name during build.
+Do not embed names in a generated deck that may be committed or published. Use `teacher-tools/name-picker/index.html` locally instead: the teacher selects the JSON file from their device, then selects a class and draws a name in a private teacher window. The tool must not upload, fetch, persist, or transmit the data. The public deck may use only neutral prompts or aliases whose real-name mapping stays with the teacher.

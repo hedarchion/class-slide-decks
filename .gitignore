@@ -3,3 +3,6 @@ copu_classes_full.json
 
 # Teacher-only lesson notes may contain sensitive classroom information.
 decks/**/notes.md
+
+# Local teacher utilities may load real names and must never be published.
+teacher-tools/
