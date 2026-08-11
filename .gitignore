@@ -1,5 +1,6 @@
 # Local student data: never publish or commit.
 copu_classes_full.json
+embeddings.jsonl
 
 # Teacher-only lesson notes may contain sensitive classroom information.
 decks/**/notes.md
