@@ -1,9 +1,17 @@
 # Local student data: never publish or commit.
 copu_classes_full.json
-embeddings.jsonl
+grammar for english teachers.md.md
 
 # Teacher-only lesson notes may contain sensitive classroom information.
 decks/**/notes.md
 
 # Local teacher utilities may load real names and must never be published.
 teacher-tools/
+
+# Scratch, browser profiles, and temporary verification artifacts: never commit.
+.edge-profile-*/
+.tmp-*
+tmp/
+simple-past-1d-build/
+Simple_Past_Tense_1D_Friday*
+node_modules/
