@@ -1,4 +1,118 @@
-<!doctype html>
+#!/usr/bin/env node
+/**
+ * build-deck-index.mjs — regenerate the workspace homepage (index.html).
+ *
+ * Scans decks/<class>/<year>/week-<NN>/<YYYY-MM-DD>-<topic>/ lesson folders,
+ * extracts class / year / week / date / topic metadata, reads the topic title
+ * from each notes.md heading (falling back to the humanised slug), detects
+ * slide decks (index.html), and writes a self-contained
+ * static index.html at the repository root.
+ *
+ * Usage:  node scripts/build-deck-index.mjs
+ * Re-run after adding, renaming, or removing a lesson folder.
+ */
+import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { join, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = fileURLToPath(new URL('..', import.meta.url));
+const decksRoot = join(root, 'decks');
+const outFile = join(root, 'index.html');
+
+const WEEK_RE = /^week-(\d+)$/i;
+const LESSON_RE = /^(\d{4})-(\d{2})-(\d{2})-(.+)$/;
+
+/** Collect every lesson folder: decks/<class>/<year>/week-N/<date>-<topic>. */
+function findLessons(dir, out = []) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const path = join(dir, entry.name);
+    const rel = path.slice(decksRoot.length + 1).split(sep);
+    if (rel.length === 4 && WEEK_RE.test(rel[2]) && LESSON_RE.test(rel[3])) {
+      out.push(path);
+    } else if (rel.length < 4) {
+      findLessons(path, out);
+    }
+  }
+  return out;
+}
+
+/** Title-case a slug, e.g. "common-illness-past-tense" -> "Common Illness Past Tense". */
+function humaniseSlug(slug) {
+  return slug
+    .split('-')
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(' ');
+}
+
+/** Strip a leading "Class 1D" token and separators from a notes.md heading. */
+function topicFromHeading(heading) {
+  let t = heading.replace(/^#\s*/, '').trim();
+  t = t.replace(/^Class\s+\d\w+\s*[\u00b7\-—:]*\s*/i, '').trim();
+  t = t.replace(/^[\u00b7\-—:]\s*/, '').trim();
+  // Generic headings like "Week 28 · 11 August 2026" carry no topic -> fallback.
+  if (/^week\s+\d+/i.test(t) || /^\d{1,2}\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(t)) return null;
+  return t || null;
+}
+
+function readTopicTitle(folder, slug) {
+  const notes = join(folder, 'notes.md');
+  if (existsSync(notes)) {
+    const head = readFileSync(notes, 'utf8').split('\n').find((l) => /^#\s+/.test(l));
+    if (head) {
+      const t = topicFromHeading(head);
+      if (t) return t;
+    }
+  }
+  return humaniseSlug(slug);
+}
+
+function fileExists(folder, name) {
+  return existsSync(join(folder, name));
+}
+
+const lessons = findLessons(decksRoot)
+  .map((folder) => {
+    const cls = folder.slice(decksRoot.length + 1).split(sep)[0];
+    const m = LESSON_RE.exec(folder.split(sep).pop());
+    const [, year, mm, dd, slug] = m;
+    const rel = folder.slice(root.length).split(sep).join('/');
+    const date = `${year}-${mm}-${dd}`;
+    return {
+      class: cls.replace(/^class-/i, '').toUpperCase(), // "1D"
+      classSlug: cls,                                    // "class-1d"
+      year,
+      week: WEEK_RE.exec(folder.split(sep)[folder.split(sep).length - 2])[1],
+      date,
+      day: weekday(date),
+      topic: readTopicTitle(folder, slug),
+      topicSlug: slug,
+      href: rel + '/',
+      hasSlides: fileExists(folder, 'index.html'),
+      worksheet: fileExists(folder, 'worksheet.html') ? 'worksheet.html' : null,
+      worksheetPdf: readdirSync(folder).find((f) => /worksheet.*\.pdf$/i.test(f)) || null,
+      notes: fileExists(folder, 'notes.md'),
+    };
+  })
+  .filter((lesson) => lesson.hasSlides)
+  .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.classSlug.localeCompare(b.classSlug)));
+
+function weekday(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'long' });
+}
+
+const classes = [...new Set(lessons.map((l) => l.class))].sort();
+const weeks = [...new Set(lessons.map((l) => l.week))].sort((a, b) => Number(a) - Number(b));
+const days = [...new Set(lessons.map((l) => l.day))].sort(
+  (a, b) => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].indexOf(a)
+    - ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].indexOf(b)
+);
+
+const json = JSON.stringify(lessons).replace(/</g, '\\u003c');
+const meta = JSON.stringify({ classes, weeks, days, generated: new Date().toISOString().slice(0, 10) }).replace(/</g, '\\u003c');
+
+const html = `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -83,8 +197,8 @@
       <span class="rule-wave">First Rule of the Class is To Listen When I'm Speaking</span>
     </div>
 
-    <script type="application/json" id="deck-data">[{"class":"1M","classSlug":"class-1m","year":"2026","week":"29","date":"2026-08-21","day":"Friday","topic":"Responsible AI Competition Preparation","topicSlug":"responsible-ai-competition-prep","href":"decks/class-1m/2026/week-29/2026-08-21-responsible-ai-competition-prep/","hasSlides":true,"worksheet":null,"worksheetPdf":null,"notes":true},{"class":"2E","classSlug":"class-2e","year":"2026","week":"29","date":"2026-08-20","day":"Thursday","topic":"Supermarket Complaint Counter","topicSlug":"supermarket-complaint-counter","href":"decks/class-2e/2026/week-29/2026-08-20-supermarket-complaint-counter/","hasSlides":true,"worksheet":null,"worksheetPdf":null,"notes":false},{"class":"1D","classSlug":"class-1d","year":"2026","week":"29","date":"2026-08-18","day":"Tuesday","topic":"Present Continuous: What Are They Doing Right Now?","topicSlug":"present-continuous","href":"decks/class-1d/2026/week-29/2026-08-18-present-continuous/","hasSlides":true,"worksheet":null,"worksheetPdf":null,"notes":true},{"class":"1D","classSlug":"class-1d","year":"2026","week":"29","date":"2026-08-17","day":"Monday","topic":"National Day Collocations","topicSlug":"national-day-collocations","href":"decks/class-1d/2026/week-29/2026-08-17-national-day-collocations/","hasSlides":true,"worksheet":"worksheet.html","worksheetPdf":null,"notes":true},{"class":"2E","classSlug":"class-2e","year":"2026","week":"29","date":"2026-08-17","day":"Monday","topic":"Reading Detectives","topicSlug":"reading-detectives","href":"decks/class-2e/2026/week-29/2026-08-17-reading-detectives/","hasSlides":true,"worksheet":null,"worksheetPdf":null,"notes":true},{"class":"1D","classSlug":"class-1d","year":"2026","week":"28","date":"2026-08-14","day":"Friday","topic":"Simple Past, Part 2","topicSlug":"simple-past-tense-2","href":"decks/class-1d/2026/week-28/2026-08-14-simple-past-tense-2/","hasSlides":true,"worksheet":null,"worksheetPdf":null,"notes":true},{"class":"1D","classSlug":"class-1d","year":"2026","week":"28","date":"2026-08-14","day":"Friday","topic":"Simple Present Tense","topicSlug":"simple-present-tense","href":"decks/class-1d/2026/week-28/2026-08-14-simple-present-tense/","hasSlides":true,"worksheet":"worksheet.html","worksheetPdf":null,"notes":true},{"class":"1D","classSlug":"class-1d","year":"2026","week":"28","date":"2026-08-11","day":"Tuesday","topic":"Common Illness Past Tense","topicSlug":"common-illness-past-tense","href":"decks/class-1d/2026/week-28/2026-08-11-common-illness-past-tense/","hasSlides":true,"worksheet":null,"worksheetPdf":null,"notes":true}]</script>
-    <script type="application/json" id="deck-meta">{"classes":["1D","1M","2E"],"weeks":["28","29"],"days":["Monday","Tuesday","Thursday","Friday"],"generated":"2026-08-21"}</script>
+    <script type="application/json" id="deck-data">${json}</script>
+    <script type="application/json" id="deck-meta">${meta}</script>
     <script>
       const DECKS = JSON.parse(document.getElementById('deck-data').textContent);
       const META = JSON.parse(document.getElementById('deck-meta').textContent);
@@ -159,3 +273,8 @@
     </script>
   </body>
 </html>
+`;
+
+writeFileSync(outFile, html);
+console.log('Wrote ' + outFile);
+console.log('Indexed ' + lessons.length + ' slide decks: ' + lessons.map((l) => l.date + ' ' + l.class + ' ' + l.topic).join(' | '));

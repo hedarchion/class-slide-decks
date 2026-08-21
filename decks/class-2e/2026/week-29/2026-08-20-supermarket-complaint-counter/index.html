@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Class 2E | The Supermarket Complaint Counter</title>
+<style>
+:root{--ink:#172b4d;--blue:#2563a8;--sky:#e7f2ff;--gold:#ffd166;--gold-deep:#c9941a;--coral:#ef6a57;--red-soft:#ffe1db;--paper:#fffdf7;--muted:#52677e;--green:#1e8e6a;--mint:#dff5ec;--line:#d8e1eb}
+*{box-sizing:border-box}
+body{margin:0;background:#dfe8f0;color:var(--ink);font-family:Segoe UI,Arial,sans-serif;overflow:hidden}
+#stage{width:1265px;height:536px;position:relative;margin:auto;background:var(--paper);overflow:hidden}
+.slide{display:none;height:474px;padding:22px 48px 14px}
+.slide.active{display:block}
+.tag{font-size:14px;font-weight:900;letter-spacing:.09em;color:var(--blue)}
+h2{font-size:33px;line-height:1.05;margin:7px 0 10px}
+.sub{font-size:17px;line-height:1.25;color:var(--muted);font-weight:650;margin:0}
+.card{background:#fff;border:3px solid var(--line);border-radius:16px;padding:13px 16px;box-shadow:0 4px 0 #e3eaf0}
+.card h3{font-size:16px;letter-spacing:.07em;margin:0 0 8px}
+.lb{font-size:19px;line-height:1.32;font-weight:750;margin:0 0 6px}
+.ex{font-size:16px;line-height:1.3;color:var(--muted);font-weight:650;margin:0 0 4px}
+.prompt{margin-top:10px;padding:11px 16px;border-radius:14px;background:var(--ink);color:#fff;font-size:22px;font-weight:900;line-height:1.15}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.chip{display:inline-flex;align-items:center;gap:7px;border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:800 17px Segoe UI,Arial,sans-serif;color:var(--ink)}
+/* reveal system: hidden until shown, keeps its slot */
+.rv{visibility:hidden}
+.rv.on{visibility:visible}
+.slot{border:2px dashed #b9c8d8;border-radius:12px;background:#fbfdff;color:var(--muted);font-weight:800}
+.step{display:inline-block;border:0;border-radius:10px;padding:7px 13px;background:#fff;color:var(--blue);font:800 15px Segoe UI,Arial,sans-serif;box-shadow:0 3px 0 #ced9e3;cursor:pointer;margin:0 6px 0 0}
+.step:hover,.step:focus{outline:4px solid var(--gold);outline-offset:1px}
+/* choice buttons */
+.choice{width:100%;border:3px solid #cfdae6;background:#fff;border-radius:14px;padding:10px 14px;color:var(--ink);font:800 18px/1.2 Segoe UI,Arial,sans-serif;text-align:left;cursor:pointer;box-shadow:0 4px 0 #d1dce7}
+.choice:hover,.choice:focus{outline:4px solid var(--gold);outline-offset:2px}
+.choice.good{background:var(--mint);border-color:var(--green)}
+.choice.bad{background:var(--red-soft);border-color:var(--coral)}
+/* products (slide 1) */
+.product{border:3px solid #cfdae6;background:#fff;border-radius:16px;padding:12px 10px;text-align:center;cursor:pointer;box-shadow:0 4px 0 #d1dce7}
+.product:hover,.product:focus{outline:4px solid var(--gold);outline-offset:2px}
+.product.sel{border-color:var(--blue);background:var(--sky);box-shadow:0 4px 0 var(--blue)}
+.product .em{font-size:46px;line-height:1}
+.product .nm{font-size:18px;font-weight:900;margin-top:4px}
+.product .pr{font-size:16px;font-weight:750;color:var(--green);margin-top:1px}
+.product .cl{font-size:14px;font-weight:650;color:var(--muted);margin-top:3px}
+/* collocation chips (slide 3) */
+.col{border:2px solid #cfdae6;background:#fff;border-radius:999px;padding:6px 11px;font:800 16px Segoe UI,Arial,sans-serif;color:var(--ink);cursor:pointer;text-align:center}
+.col:hover,.col:focus{outline:3px solid var(--gold);outline-offset:1px}
+.col.on{background:var(--gold);border-color:var(--gold-deep)}
+/* sentence builder (slide 4) */
+.w{border:3px solid var(--blue);background:var(--sky);border-radius:12px;padding:9px 14px;font:800 19px Segoe UI,Arial,sans-serif;color:var(--ink);cursor:pointer}
+.w:hover,.w:focus{outline:3px solid var(--gold)}
+.w.used{opacity:.35;cursor:default}
+.buildline{min-height:46px;border:3px dashed var(--blue);border-radius:12px;background:#f4f9ff;display:flex;flex-wrap:wrap;gap:8px;padding:7px 9px;align-items:center}
+.buildline .w{background:#fff;border-color:var(--green);cursor:default}
+.buildline.ok{border-color:var(--green);background:var(--mint)}
+.buildline.bad{border-color:var(--coral);background:var(--red-soft)}
+.buildline.covered{visibility:hidden}
+.buildline.covered::after{content:"SAY IT ALOUD — NO LOOKING";visibility:visible;color:var(--coral);font-weight:900;font-size:15px;letter-spacing:.05em}
+/* dialogue bubbles */
+.bub{display:inline-block;border-radius:14px;padding:7px 12px;font-weight:800;font-size:18px;line-height:1.25}
+.bub.c{background:var(--sky);color:var(--blue);border:2px solid var(--blue)}
+.bub.s{background:var(--mint);color:var(--green);border:2px solid var(--green)}
+/* ladder (slide 8) */
+.lstep{border-radius:12px;padding:7px 12px;border:2px dashed #b9c8d8;background:#fbfdff;display:flex;align-items:center}
+.lstep::before{content:attr(data-hint);font-size:16px;font-weight:900;color:var(--muted);letter-spacing:.04em}
+.lstep .inner{display:flex;align-items:center;gap:10px;width:100%;visibility:hidden}
+.lstep.on{border-style:solid}
+.lstep.on::before{content:""}
+.lstep.on .inner{visibility:visible}
+.lstep .who{min-width:205px;font-size:14px;font-weight:900;letter-spacing:.05em}
+.lstep .say{font-size:18px;font-weight:800}
+.lstep.c.on{background:var(--sky);border-color:var(--blue)}
+.lstep.s.on{background:var(--mint);border-color:var(--green)}
+.lstep.both.on{background:#fff2c9;border-color:var(--gold-deep)}
+.ribbon{display:flex;align-items:center;gap:6px;justify-content:center;font-size:14px;font-weight:900;color:var(--blue)}
+.ribbon .rk{background:var(--sky);border:2px solid var(--blue);border-radius:999px;padding:4px 10px}
+.fb{margin-top:8px;min-height:22px;color:#176b57;font-size:17px;font-weight:850}
+.fb.bad{color:var(--coral)}
+.hidden{visibility:hidden}
+.small{font-size:15px}
+/* chrome */
+.chrome{position:absolute;left:0;right:0;bottom:0;height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-top:1px solid var(--line);background:var(--paper);color:var(--muted);font-size:14px;font-weight:850}
+.nav{min-width:72px;border:0;border-radius:10px;padding:9px 12px;background:#fff;color:var(--ink);font:800 14px Segoe UI,Arial,sans-serif;box-shadow:0 3px 0 #ced9e3;cursor:pointer;margin-left:6px}
+.nav.primary{background:var(--blue);color:#fff;box-shadow:0 3px 0 #174b82}
+.nav:disabled{opacity:.4;cursor:not-allowed}
+#toast{position:absolute;right:22px;top:14px;z-index:5;padding:9px 12px;border-radius:10px;background:var(--ink);color:#fff;font-weight:800;font-size:15px;opacity:0;pointer-events:none}
+#toast.show{opacity:1}
+.bigQ{background:var(--ink);color:#fff;border-radius:14px;padding:10px 14px;font-size:24px;font-weight:900}
+@media(max-width:1265px){#stage{transform-origin:top left}}
+</style></head><body><main id="stage"><div id="toast"></div>
+
+<!-- SLIDE 1 -->
+<section class="slide active" data-title="Something is wrong!">
+  <span class="tag">WEEK 29 · SPEAKING · THURSDAY</span>
+  <h2>YOU BOUGHT THIS. WHAT WOULD YOU SAY?</h2>
+  <p class="sub">Tap a product. Then decide: would you complain?</p>
+  <div class="grid3" style="margin-top:8px">
+    <button class="product" data-problem="The milk smells bad.">
+      <div class="em">🥛</div><div class="nm">FreshDay Milk</div><div class="pr">RM7.90</div><div class="cl">Expiry: 25 August</div>
+    </button>
+    <button class="product" data-problem="The price is wrong.">
+      <div class="em">🍪</div><div class="nm">Crunchies Biscuits</div><div class="pr">RM5.50</div><div class="cl">Shelf label: RM4.50</div>
+    </button>
+    <button class="product" data-problem="One of the apples is rotten.">
+      <div class="em">🍎</div><div class="nm">Golden Apples</div><div class="pr">RM8.00</div><div class="cl">One apple looks rotten</div>
+    </button>
+  </div>
+  <div class="slot" style="margin-top:9px;padding:8px 14px;font-size:20px;font-weight:800;min-height:42px"><span class="rv" id="s1-problem"></span></div>
+  <div style="margin-top:8px;display:flex;align-items:center;gap:10px;min-height:46px">
+    <button class="step" data-reveal="s1-question" style="white-space:nowrap">① Would you complain? Why?</button>
+    <button class="step" data-reveal="s1-goal" style="white-space:nowrap">② Make it stronger</button>
+    <span class="rv" id="s1-question" style="flex:1;background:var(--sky);border:2px solid var(--blue);border-radius:12px;padding:8px 12px;font-size:20px;font-weight:900;color:var(--blue);white-space:nowrap;overflow:hidden">Would you complain? Why?</span>
+    <span class="rv" id="s1-goal" style="flex:1;background:var(--gold);border:2px solid var(--gold-deep);border-radius:12px;padding:8px 12px;font-size:19px;font-weight:900;white-space:nowrap;overflow:hidden">Good. Today, we are going to make these sentences <u>stronger</u>.</span>
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide" data-title="The challenge">
+  <span class="tag">THE CHALLENGE</span>
+  <h2>Today you work at the complaint counter</h2>
+  <div class="grid2">
+    <div class="card" style="border-color:var(--blue);background:var(--sky);text-align:center;padding:22px 16px">
+      <div style="font-size:40px">🛒</div>
+      <div style="font-size:15px;font-weight:900;letter-spacing:.08em;color:var(--blue);margin-top:4px">CUSTOMER</div>
+      <div style="font-size:23px;font-weight:900;margin-top:6px">You have a problem.</div>
+    </div>
+    <div class="card" style="border-color:var(--green);background:var(--mint);text-align:center;padding:22px 16px">
+      <div style="font-size:40px">🏪</div>
+      <div style="font-size:15px;font-weight:900;letter-spacing:.08em;color:var(--green);margin-top:4px">CUSTOMER SERVICE</div>
+      <div style="font-size:23px;font-weight:900;margin-top:6px">You must solve the problem.</div>
+    </div>
+  </div>
+  <div style="margin-top:12px;min-height:46px">
+    <button class="step" data-reveal="s2-challenge s2-path">Reveal today's challenge</button>
+    <div class="rv" id="s2-challenge" style="display:block;margin-top:2px;background:var(--ink);padding:9px 14px;border-radius:12px;color:#fff;font-size:22px;font-weight:900">Can you solve the problem <u>without becoming angry</u>?</div>
+  </div>
+  <div class="rv" id="s2-path" style="display:flex;align-items:center;gap:8px;margin-top:10px">
+    <div class="rk" style="background:var(--coral);color:#fff;border-radius:999px;padding:7px 16px;font-weight:900;font-size:18px">1 COMPLAIN</div>
+    <span style="font-size:20px;font-weight:900;color:var(--muted)">→</span>
+    <div class="rk" style="background:var(--blue);color:#fff;border-radius:999px;padding:7px 16px;font-weight:900;font-size:18px">2 REASON</div>
+    <span style="font-size:20px;font-weight:900;color:var(--muted)">→</span>
+    <div class="rk" style="background:var(--green);color:#fff;border-radius:999px;padding:7px 16px;font-weight:900;font-size:18px">3 RESPOND</div>
+    <span style="font-size:20px;font-weight:900;color:var(--muted)">→</span>
+    <div class="rk" style="background:var(--gold-deep);color:#fff;border-radius:999px;padding:7px 16px;font-weight:900;font-size:18px">4 SOLUTION</div>
+  </div>
+</section>
+
+<!-- SLIDE 3 -->
+<section class="slide" data-title="Step 1 · Complain">
+  <span class="tag">STEP 1 · MAKE A COMPLAINT</span>
+  <h2 style="font-size:29px">1. COMPLAIN — start strong, stay polite</h2>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+    <span class="chip" style="border-color:var(--coral);color:var(--coral)">✗ “This is bad.”</span>
+    <span class="chip" style="border-color:var(--coral);color:var(--coral)">✗ “I don't like this.”</span>
+    <span class="chip" style="border-color:var(--coral);color:var(--coral)">✗ “Give money!”</span>
+    <span style="font-size:16px;font-weight:800;color:var(--muted)">What's the problem? How can we say it better?</span>
+  </div>
+  <div class="grid2">
+    <div class="card" style="border-color:var(--blue)">
+      <h3 style="color:var(--blue)">LANGUAGE BANK · A2 CORE</h3>
+      <p class="lb">Excuse me, there's a problem with <u>______</u>.</p>
+      <p class="ex">…with this milk.</p>
+      <p class="lb">I'm sorry, but this <u>______</u> is <u>______</u>.</p>
+      <p class="ex">…but this bottle is leaking.</p>
+      <p class="lb">I bought this <u>______</u>, but <u>______</u>.</p>
+      <p class="ex">…but the price was wrong.</p>
+    </div>
+    <div class="card" style="border-color:var(--green)">
+      <h3 style="color:var(--green)">USEFUL COLLOCATIONS — tap each one</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
+        <button class="col">wrong price</button><button class="col">damaged packaging</button><button class="col">missing item</button><button class="col">expired product</button>
+        <button class="col">rotten fruit</button><button class="col">broken bottle</button><button class="col">open package</button><button class="col">poor quality</button>
+      </div>
+      <div style="font-size:16px;font-weight:800;color:var(--muted)">Micro-practice — say it together:</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px">
+        <button class="step" data-reveal="s3-1">🥛 + expired</button>
+        <button class="step" data-reveal="s3-2">📦 + damaged</button>
+        <button class="step" data-reveal="s3-3">🧾 + wrong price</button>
+      </div>
+      <div style="margin-top:6px;font-size:18px;font-weight:850;line-height:1.5">
+        <span class="rv" id="s3-1" style="display:block;color:var(--green)">“I'm sorry, but this milk is expired.”</span>
+        <span class="rv" id="s3-2" style="display:block;color:var(--green)">“I'm sorry, but this packaging is damaged.”</span>
+        <span class="rv" id="s3-3" style="display:block;color:var(--green)">“I'm sorry, but this price is wrong.”</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4 -->
+<section class="slide" data-title="Step 2 · Reason">
+  <span class="tag">STEP 2 · GIVE A REASON</span>
+  <h2 style="font-size:29px">2. Don't stop at the complaint.</h2>
+  <div style="display:flex;gap:12px;align-items:stretch">
+    <button class="choice" style="flex:1;font-size:17px" data-correct>A: This cereal box is damaged.</button>
+    <button class="choice" style="flex:1.6;font-size:17px">B: This cereal box is damaged <u>and some of the cereal has fallen out.</u></button>
+    <div style="display:flex;flex-direction:column;justify-content:center;min-width:180px;font-size:16px;font-weight:800;color:var(--muted)">Which complaint is <span style="color:var(--blue)">stronger</span>? Why?</div>
+  </div>
+  <div class="rv fb" id="s4-fb" style="margin-top:6px;font-size:17px;font-weight:850;color:#176b57">✓ B — a reason shows <i>why</i> it matters. COMPLAINT + because/so/but → REASON</div>
+  <div class="grid2" style="margin-top:8px">
+    <div class="card" style="border-color:var(--blue)">
+      <h3 style="color:var(--blue)">LANGUAGE FRAMES</h3>
+      <p class="lb">The problem is <u>______</u> because <u>______</u>.</p>
+      <p class="lb">I can't use / eat / drink it because <u>______</u>.</p>
+      <p class="lb">I think I should get <u>______</u> because <u>______</u>.</p>
+    </div>
+    <div class="card" style="border-color:var(--green)">
+      <h3 style="color:var(--green)">CONNECTORS + EXAMPLES</h3>
+      <p class="lb">because · so · but</p>
+      <p class="ex">I can't drink it <b>because</b> it has expired.</p>
+      <p class="ex">I paid RM10, <b>but</b> the shelf price was RM8.</p>
+      <p class="ex">The bottle is leaking, <b>so</b> I'd like another one.</p>
+    </div>
+  </div>
+  <div style="margin-top:8px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:16px;font-weight:900;color:var(--muted)">SENTENCE BUILDER — tap in the right order:</span>
+      <button class="w" data-order="2">because</button>
+      <button class="w" data-order="1">The yogurt is expired</button>
+      <button class="w" data-order="3">the date was yesterday.</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px;align-items:center">
+      <div class="buildline" id="buildline"></div>
+      <button class="step" id="coverbtn" style="white-space:nowrap">🙈 Cover it — say it aloud</button>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5 -->
+<section class="slide" data-title="Step 3 · Respond">
+  <span class="tag">STEP 3 · CUSTOMER SERVICE RESPONDS</span>
+  <h2 style="font-size:29px">3. Customer service responds</h2>
+  <p class="sub">First acknowledge. Then ask. Then offer.</p>
+  <div class="grid3" style="margin-top:6px">
+    <div class="card" style="border-color:var(--blue);background:var(--sky)">
+      <h3 style="color:var(--blue)">ACKNOWLEDGE</h3>
+      <p class="lb" style="font-size:18px">I'm sorry about that.</p>
+      <p class="lb" style="font-size:18px">I understand the problem.</p>
+      <p class="lb" style="font-size:18px">Let me check.</p>
+    </div>
+    <div class="card" style="border-color:var(--blue)">
+      <h3 style="color:var(--blue)">ASK</h3>
+      <p class="lb" style="font-size:18px">Do you have the receipt?</p>
+      <p class="lb" style="font-size:18px">When did you buy it?</p>
+      <p class="lb" style="font-size:18px">What's wrong with the product?</p>
+      <p class="lb" style="font-size:18px">Could you show me the product?</p>
+    </div>
+    <div class="card" style="border-color:var(--green);background:var(--mint)">
+      <h3 style="color:var(--green)">OFFER</h3>
+      <p class="lb" style="font-size:18px">We can replace it.</p>
+      <p class="lb" style="font-size:18px">We can give you a refund.</p>
+      <p class="lb" style="font-size:18px">I can exchange it for you.</p>
+      <p class="lb" style="font-size:18px">Would you like another one?</p>
+    </div>
+  </div>
+  <div style="margin-top:9px;background:#fff;border:3px solid var(--line);border-radius:14px;padding:9px 14px">
+    <div style="font-size:16px;font-weight:900;color:var(--muted)">QUICK REACTION — the customer says:</div>
+    <div style="font-size:19px;font-weight:800;margin-top:4px">“I bought this juice this morning, but the bottle is leaking.”</div>
+    <div style="display:flex;gap:10px;margin-top:7px">
+      <button class="choice" style="font-size:16px">A. “I like juice.”</button>
+      <button class="choice" data-correct style="font-size:16px">B. “I'm sorry about that. Could I see the bottle?”</button>
+      <button class="choice" style="font-size:16px">C. “No.”</button>
+    </div>
+    <div class="fb hidden">✓ B — acknowledge first, then ask to check the evidence.</div>
+  </div>
+</section>
+
+<!-- SLIDE 6 -->
+<section class="slide" data-title="The argument">
+  <span class="tag">STEP 4 · THE ARGUMENT BEGINS</span>
+  <h2 style="font-size:29px">4. The argument begins</h2>
+  <div style="background:var(--ink);color:#fff;border-radius:14px;padding:10px 14px;font-size:19px;font-weight:800;line-height:1.35">
+    Customer wants a <b>refund</b>. Customer service can only offer an <b>exchange</b>.
+    <div style="margin-top:6px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span class="bub c">I'd like a refund, please.</span>
+      <span style="font-size:18px;font-weight:900;color:var(--gold)">→</span>
+      <span class="bub s">I'm sorry, but we can only replace the product.</span>
+      <span style="font-size:16px;font-weight:900;color:var(--gold)">What can the customer say now?</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:14px;margin-top:8px">
+    <div style="flex:1;background:var(--red-soft);border:3px solid var(--coral);border-radius:14px;padding:8px 12px;font-size:16px;font-weight:800;color:#a03a2a;line-height:1.35">
+      ✗ <s>You're wrong!</s> <s>That's stupid!</s> <s>Give me my money!</s>
+    </div>
+    <div style="flex:2;background:var(--mint);border:3px solid var(--green);border-radius:14px;padding:8px 12px;font-size:17px;font-weight:800;color:#155c47;line-height:1.35">
+      ✓ “I understand, but I don't think that's fair because the product was already damaged.”
+    </div>
+  </div>
+  <div class="grid2" style="margin-top:8px">
+    <div class="card" style="border-color:var(--blue)">
+      <h3 style="color:var(--blue)">POLITE DISAGREEMENT · A2 CORE</h3>
+      <p class="lb" style="font-size:18px">I understand, but <u>______</u>.</p>
+      <p class="lb" style="font-size:18px">I'm sorry, but I don't agree.</p>
+      <p class="lb" style="font-size:18px">But the problem is <u>______</u>.</p>
+      <p class="lb" style="font-size:18px">Could you <u>______</u> instead?</p>
+    </div>
+    <div class="card" style="border-color:var(--gold-deep);background:#fffaf0">
+      <h3 style="color:var(--gold-deep)">EXTENSION · A2-HIGH / B1</h3>
+      <p class="lb" style="font-size:18px">I see your point, but <u>______</u>.</p>
+      <p class="lb" style="font-size:18px">I don't think that's fair because <u>______</u>.</p>
+      <p class="lb" style="font-size:18px">I'd prefer <u>______</u> because <u>______</u>.</p>
+      <p class="lb" style="font-size:18px">Would it be possible to <u>______</u>?</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7 -->
+<section class="slide" data-title="Build an argument">
+  <span class="tag">PUT IT TOGETHER · C + R + S</span>
+  <h2 style="font-size:29px">Build an argument — Claim · Reason · Solution</h2>
+  <div style="display:flex;gap:16px">
+    <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+      <div class="card" style="border-color:var(--coral);border-left:10px solid var(--coral);padding:9px 13px">
+        <div style="font-size:14px;font-weight:900;letter-spacing:.08em;color:var(--coral)">CLAIM — what do you want?</div>
+        <div style="font-size:19px;font-weight:900;margin-top:2px">“I think I should get a refund.”</div>
+      </div>
+      <div class="card" style="border-color:var(--blue);border-left:10px solid var(--blue);padding:9px 13px">
+        <div style="font-size:14px;font-weight:900;letter-spacing:.08em;color:var(--blue)">REASON — why?</div>
+        <div style="font-size:19px;font-weight:900;margin-top:2px">“…because the product has expired.”</div>
+      </div>
+      <div class="card" style="border-color:var(--green);border-left:10px solid var(--green);padding:9px 13px">
+        <div style="font-size:14px;font-weight:900;letter-spacing:.08em;color:var(--green)">SOLUTION — what should happen?</div>
+        <div style="font-size:19px;font-weight:900;margin-top:2px">“Could you refund my money, please?”</div>
+      </div>
+    </div>
+    <div style="flex:1.35;display:flex;flex-direction:column;gap:8px">
+      <div class="slot" style="padding:10px 14px;border-style:solid;border-color:var(--gold-deep);background:#fff2c9;font-size:19px;font-weight:900;line-height:1.3">
+        <span class="rv" id="s7-combined">“I think I should get a refund because the product has expired. Could you refund my money, please?”</span>
+      </div>
+      <div style="font-size:16px;font-weight:900;color:var(--muted)">Now try — 🎧 headphones · one side doesn't work · replacement:</div>
+      <div class="slot" style="padding:10px 14px;font-size:18px;font-weight:850;line-height:1.3;min-height:46px">
+        <span class="rv" id="s7-try">“I think I should get a replacement because one side doesn't work.”</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="step" data-reveal="s7-combined">Show the combined argument</button>
+        <button class="step" data-reveal="s7-try">Show the headphones sentence</button>
+      </div>
+      <div style="font-size:16px;font-weight:800;color:var(--muted);line-height:1.3">Same shape, different products: expired milk · rotten apples · wrong price on biscuits. <span style="color:var(--green)">The structure does the work.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 8 -->
+<section class="slide" data-title="Conversation ladder">
+  <span class="tag">THE LADDER · ROUND 1 SCAFFOLD</span>
+  <h2 style="font-size:29px">The conversation ladder — one step at a time</h2>
+  <div style="display:flex;gap:8px;margin-bottom:6px">
+    <button class="step" id="ladderbtn">Show next step</button>
+    <span style="font-size:15px;font-weight:800;color:var(--muted);align-self:center">This is your support for Round 1. Don't read it — use it.</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <div class="lstep c" data-n="1" data-hint="STEP 1 · OPEN — ?"><span class="inner"><span class="who">CUSTOMER · 1 OPEN</span><span class="say">Excuse me, there's a problem with this <u>______</u>.</span></span></div>
+    <div class="lstep s" data-n="2" data-hint="STEP 2 · RESPOND — ?"><span class="inner"><span class="who">CUSTOMER SERVICE · 2 RESPOND</span><span class="say">I'm sorry about that. What's wrong with it?</span></span></div>
+    <div class="lstep c" data-n="3" data-hint="STEP 3 · EXPLAIN — ?"><span class="inner"><span class="who">CUSTOMER · 3 EXPLAIN</span><span class="say"><u>______</u> because <u>______</u>.</span></span></div>
+    <div class="lstep s" data-n="4" data-hint="STEP 4 · OFFER — ?"><span class="inner"><span class="who">CUSTOMER SERVICE · 4 OFFER</span><span class="say">We can <u>______</u>.</span></span></div>
+    <div class="lstep c" data-n="5" data-hint="STEP 5 · AGREE / DISAGREE — ?"><span class="inner"><span class="who">CUSTOMER · 5 AGREE / DISAGREE</span><span class="say">“That would be great, thank you.” OR “I understand, but <u>______</u>.”</span></span></div>
+    <div class="lstep both" data-n="6" data-hint="STEP 6 · RESOLVE — ?"><span class="inner"><span class="who">BOTH · 6 RESOLVE</span><span class="say">“Could you <u>______</u> instead?” → “Yes, we can do that.”</span></span></div>
+  </div>
+  <div class="ribbon" style="margin-top:8px">
+    <span class="rk">OPEN</span><span>→</span><span class="rk">PROBLEM</span><span>→</span><span class="rk">REASON</span><span>→</span><span class="rk">OFFER</span><span>→</span><span class="rk">NEGOTIATE</span><span>→</span><span class="rk">SOLUTION</span>
+  </div>
+</section>
+
+<!-- SLIDE 9 -->
+<section class="slide" data-title="Fix this conversation">
+  <span class="tag">ERROR ANALYSIS · MAKE IT BETTER</span>
+  <h2 style="font-size:29px">Fix this conversation</h2>
+  <p class="sub">Can we make it better? Improve it one line at a time.</p>
+  <div style="display:flex;gap:14px;margin-top:8px">
+    <div style="flex:1;background:var(--red-soft);border:3px solid var(--coral);border-radius:14px;padding:10px 14px;font-size:19px;font-weight:800;line-height:1.5;color:#8c3226">
+      <b style="font-size:15px;letter-spacing:.07em">TOO WEAK</b><br>
+      <span class="bub c" style="background:#fff">This milk bad.</span><br>
+      <span class="bub s" style="background:#fff">Okay.</span><br>
+      <span class="bub c" style="background:#fff">Money back.</span><br>
+      <span class="bub s" style="background:#fff">No.</span><br>
+      <span class="bub c" style="background:#fff">Why?</span>
+    </div>
+    <div style="flex:1.5">
+      <div class="slot" style="min-height:212px;padding:10px 14px;display:flex;flex-direction:column;gap:6px;justify-content:center">
+        <span class="rv" id="s9-fix" style="font-size:18px;font-weight:800;line-height:1.45;color:#155c47">
+          <span class="bub c">Excuse me, there's a problem with this milk.</span><br>
+          <span class="bub s">I'm sorry about that. What's wrong with it?</span><br>
+          <span class="bub c">It smells bad even though I bought it this morning. I'd like a refund, please.</span><br>
+          <span class="bub s">I'm sorry, but I can only offer you another bottle.</span><br>
+          <span class="bub c">I understand, but I'd prefer a refund because I don't want another bottle.</span>
+        </span>
+      </div>
+      <button class="step" data-reveal="s9-fix" style="margin-top:8px">Show one possible fix</button>
+      <div class="rv" id="s9-note" style="font-size:15px;font-weight:800;color:var(--muted);margin-top:6px">You don't need this exact answer — reward any improvement that stays polite.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 10 -->
+<section class="slide" data-title="Your mission">
+  <span class="tag">FINAL CHALLENGE · ROUND 3</span>
+  <h2 style="font-size:29px">Your mission — Customer Complaint Challenge</h2>
+  <div style="background:var(--gold);border:3px solid var(--gold-deep);border-radius:14px;padding:9px 14px;font-size:21px;font-weight:950;text-align:center">🚫 You CANNOT show your card to your partner.</div>
+  <div class="grid2" style="margin-top:9px">
+    <div class="card" style="border-color:var(--blue);background:var(--sky);padding:10px 14px">
+      <h3 style="color:var(--blue)">THE CUSTOMER KNOWS</h3>
+      <p class="lb" style="font-size:18px">· the product &amp; the problem</p>
+      <p class="lb" style="font-size:18px">· the evidence (receipt, packaging…)</p>
+      <p class="lb" style="font-size:18px">· what they want</p>
+    </div>
+    <div class="card" style="border-color:var(--green);background:var(--mint);padding:10px 14px">
+      <h3 style="color:var(--green)">THE STAFF KNOWS</h3>
+      <p class="lb" style="font-size:18px">· the shop policy</p>
+      <p class="lb" style="font-size:18px">· what they may offer</p>
+      <p class="lb" style="font-size:18px">· what they cannot offer</p>
+    </div>
+  </div>
+  <div style="margin-top:9px;background:#fff;border:3px solid var(--line);border-radius:14px;padding:9px 14px">
+    <div style="font-size:15px;font-weight:900;letter-spacing:.06em;color:var(--blue);margin-bottom:5px">SUCCESS CHECKLIST</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px 14px;font-size:16px;font-weight:800">
+      <div>☐ Explain the problem</div><div>☐ Give a reason</div><div>☐ Ask for a solution</div>
+      <div>☐ Respond to your partner</div><div>☐ Agree OR disagree politely</div><div>☐ Reach a solution</div>
+    </div>
+  </div>
+  <div style="margin-top:8px;font-size:17px;font-weight:950;color:var(--coral);text-align:center">DO NOT READ A SCRIPT — use the language box when you need help.</div>
+</section>
+
+<div class="chrome"><div id="status">CLASS 2E · SOMETHING IS WRONG! · 1 / 10</div><div><button class="nav" id="prev">← Back</button><button class="nav primary" id="next">Next →</button><button class="nav" id="reveal">Reveal</button><button class="nav" id="reset">Reset</button></div></div></main>
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+const statusEl=document.querySelector('#status'),prevBtn=document.querySelector('#prev'),nextBtn=document.querySelector('#next'),revealBtn=document.querySelector('#reveal'),resetBtn=document.querySelector('#reset'),toastEl=document.querySelector('#toast');
+let current=0;
+function fit(){const scale=Math.min(innerWidth/1265,innerHeight/536);document.querySelector('#stage').style.transform=`scale(${scale})`}
+function toast(m){toastEl.textContent=m;toastEl.classList.add('show');clearTimeout(toastEl._t);toastEl._t=setTimeout(()=>toastEl.classList.remove('show'),1100)}
+function cur(){return slides[current]}
+function show(index){
+  current=Math.max(0,Math.min(slides.length-1,index));
+  slides.forEach((s,i)=>s.classList.toggle('active',i===current));
+  statusEl.textContent=`CLASS 2E · ${cur().dataset.title.toUpperCase()} · ${current+1} / ${slides.length}`;
+  prevBtn.disabled=current===0;nextBtn.disabled=current===slides.length-1;fit();
+}
+function revealAll(){
+  cur().querySelectorAll('.rv').forEach(x=>x.classList.add('on'));
+  cur().querySelectorAll('.lstep').forEach(x=>x.classList.add('on'));
+  cur().querySelectorAll('.fb.hidden').forEach(x=>x.classList.remove('hidden'));
+  const lb=document.querySelector('#ladderbtn');if(lb)lb.textContent='Ladder complete ✓';
+}
+function clearStates(){
+  document.querySelectorAll('.product').forEach(x=>x.classList.remove('sel'));
+  document.querySelectorAll('.col').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.choice').forEach(x=>x.classList.remove('good','bad'));
+  document.querySelectorAll('.fb').forEach(x=>x.classList.add('hidden'));
+  document.querySelectorAll('.rv').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.lstep').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.w').forEach(x=>x.classList.remove('used'));
+  const bl=document.querySelector('#buildline');if(bl){bl.innerHTML='';bl.classList.remove('ok','bad','covered');}
+  const lb=document.querySelector('#ladderbtn');if(lb)lb.textContent='Show next step';
+  built=[];
+}
+/* step buttons reveal target ids */
+document.querySelectorAll('.step[data-reveal]').forEach(b=>b.addEventListener('click',()=>{
+  b.getAttribute('data-reveal').split(/\s+/).forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('on')});
+}));
+/* products: show problem line */
+const probEl=document.getElementById('s1-problem');
+document.querySelectorAll('.product').forEach(p=>p.addEventListener('click',()=>{
+  document.querySelectorAll('.product').forEach(x=>x.classList.remove('sel'));
+  p.classList.add('sel');
+  probEl.textContent='“'+p.dataset.problem+'”';
+  probEl.classList.add('on');
+  toast(p.dataset.problem);
+}));
+/* collocation chips */
+document.querySelectorAll('.col').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
+/* choice buttons (A/B, A/B/C) */
+document.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>{
+  const group=[...b.parentElement.querySelectorAll('.choice')];
+  group.forEach(x=>x.classList.remove('good','bad'));
+  const ok=b.hasAttribute('data-correct');
+  b.classList.add(ok?'good':'bad');
+  const slide=slides.find(s=>s.contains(b));
+  const fb=slide.querySelector('.fb');
+  if(fb){fb.classList.remove('hidden');fb.classList.add('on');}
+  toast(ok?'Correct!':'Check the options again.');
+}));
+/* sentence builder */
+const bl=document.querySelector('#buildline');
+let built=[];
+function refreshBuilder(){
+  bl.innerHTML='';
+  built.forEach(o=>{const s=document.createElement('span');s.className='w';s.textContent=o.t;bl.appendChild(s)});
+  bl.classList.remove('ok','bad');
+  if(built.length===3){
+    const ok=built[0].o===1&&built[1].o===2&&built[2].o===3;
+    bl.classList.add(ok?'ok':'bad');
+    if(ok){toast('Perfect order! Now say it aloud.');}
+    else{toast('Almost — try: The yogurt is expired because the date was yesterday.');}
+  }
+}
+document.querySelectorAll('.w').forEach(w=>w.addEventListener('click',()=>{
+  if(w.classList.contains('used'))return;
+  w.classList.add('used');
+  built.push({o:+w.dataset.order,t:w.textContent});
+  refreshBuilder();
+}));
+document.getElementById('coverbtn').addEventListener('click',()=>{
+  bl.classList.toggle('covered');
+  toast(bl.classList.contains('covered')?'Say it from memory!':'Okay, look again.');
+});
+/* ladder: reveal steps one by one */
+document.getElementById('ladderbtn').addEventListener('click',()=>{
+  const steps=[...cur().querySelectorAll('.lstep:not(.on)')];
+  if(!steps.length){toast('All steps are shown.');return}
+  steps[0].classList.add('on');
+  const left=steps.length-1;
+  document.getElementById('ladderbtn').textContent=left?`Show next step (${left} left)`:'Ladder complete ✓';
+});
+/* chrome */
+prevBtn.addEventListener('click',()=>show(current-1));
+nextBtn.addEventListener('click',()=>show(current+1));
+revealBtn.addEventListener('click',()=>{revealAll();toast('Everything revealed')});
+resetBtn.addEventListener('click',()=>{clearStates();show(0);toast('Deck reset')});
+addEventListener('keydown',e=>{
+  if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();show(current+1)}
+  else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();show(current-1)}
+  else if(e.key.toLowerCase()==='r')revealAll();
+  else if(e.key==='Escape'){clearStates();toast('States cleared')}
+});
+addEventListener('resize',fit);
+/* URL deep-links for the teacher and for verification: ?slide=N&reveal=1 */
+const params=new URLSearchParams(location.search);
+const jump=parseInt(params.get('slide'),10);
+if(Number.isFinite(jump)){show(jump-1)}
+if(params.get('reveal')==='1'){revealAll()}
+else{show(current)}
+</script></body></html>
