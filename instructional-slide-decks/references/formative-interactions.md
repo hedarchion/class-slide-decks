@@ -4,7 +4,7 @@ Choose the smallest interaction that produces useful evidence of learning.
 
 ## Interaction contract
 
-Every interactive slide must provide a clear prompt, a visible way to respond, a teacher-controlled check/reveal, explanatory feedback, and a reset. Preserve keyboard operation and a non-digital fallback.
+Every interactive slide must provide a clear prompt, a visible way to respond, a teacher-controlled check/reveal, explanatory feedback, and a reset. Preserve keyboard operation and a non-digital fallback. A button, tab, card, or reveal control that is visible but does not update the slide state is a blocking defect.
 
 ## Suitable patterns
 
@@ -19,3 +19,5 @@ Every interactive slide must provide a clear prompt, a visible way to respond, a
 ## Implementation guidance
 
 Use buttons for discrete choices and native pointer/keyboard-accessible interactions. Do not rely on drag-and-drop alone; provide tap/click alternatives. Maintain visible focus states, sufficient contrast, labels that describe actions, and motion that can be skipped. Keep state local to the slide and never require a login, network connection, or individual student device unless the user explicitly requests it.
+
+During verification, exercise each control with a real browser action: click or tap choices, reveal/check answers, reset the slide, navigate away and back, and test the keyboard path. If an existing deck's interaction shell fails, simplify or refactor the implementation rather than preserving a non-working pattern.

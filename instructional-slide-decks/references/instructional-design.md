@@ -5,12 +5,14 @@ Use this reference while mapping or reviewing a lesson.
 ## Build the slide map
 
 1. State one observable objective: “Students will be able to …”.
-2. Identify the prerequisite knowledge and one likely misconception.
-3. Sequence moves: activate/retrieve → explain or model → guided practice → formative check → correction → independent/transfer check.
-4. Allocate one idea or decision to each slide. Add a slide rather than shrinking text or combining steps.
+2. Identify the prerequisite knowledge, including offline lessons the local files may not show, and one likely misconception.
+3. Write the bridge from previous learning to the new objective as an actual teaching move, not only a title or recap.
+4. Sequence moves: activate/retrieve → bridge → explain or model → guided practice → formative check → correction → independent/transfer check.
+5. Allocate one idea or decision to each slide. Add a slide rather than shrinking text or combining steps.
 
 ## Check every slide
 
+- Does the slide clearly connect to prior knowledge, introduce the bridge, or advance the new objective?
 - Does the question require the intended thinking rather than recall of a label?
 - Can a student see where to look and what to do within a few seconds?
 - Is any text, image, color, or control non-essential to the answer? Remove it.

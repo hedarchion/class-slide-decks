@@ -1,0 +1,29 @@
+[
+  {
+    "query": "third person singular s spelling pronunciation",
+    "objective": "use the simple present accurately with he she and it",
+    "expectedHeading": "third person s"
+  },
+  {
+    "query": "do does questions base verb present simple",
+    "misconception": "learners add s to the main verb after does",
+    "expectedHeading": "The present"
+  },
+  {
+    "query": "past simple questions did base verb",
+    "misconception": "learners use the past form after did",
+    "expectedHeading": "The past"
+  },
+  {
+    "query": "present perfect for since how long",
+    "expectedHeading": "present perfect"
+  },
+  {
+    "query": "articles a an the definite indefinite",
+    "expectedHeading": "Articles"
+  },
+  {
+    "query": "subject verb agreement concord",
+    "expectedHeading": "agreement"
+  }
+]

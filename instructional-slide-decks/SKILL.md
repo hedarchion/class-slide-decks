@@ -1,32 +1,23 @@
 ---
 name: instructional-slide-decks
-description: Create or revise concise, teacher-led classroom slide decks as interactive HTML styled with Tailwind CSS. Use for lessons, teaching presentations, formative-assessment slides, whiteboard-replacement decks, or requests to turn a topic, curriculum objective, or lesson plan into projected slides for students.
+description: Create, revise, and improve concise teacher-led classroom slide decks as interactive HTML, including lesson continuity, heading-aware retrieval from the local grammar reference book, formative interactions, viewport verification, and learning from teacher feedback. Use for lessons, teaching presentations, formative-assessment slides, whiteboard-replacement decks, or requests to turn a topic, curriculum objective, prior deck, or classroom comment into projected student-facing slides.
 ---
 
 # Instructional Slide Decks
 
-Build a deck for a teacher operating a shared classroom display. Treat the slides as a focused teaching surface, not a document or a self-paced course.
+Build a deck for a teacher operating one shared classroom display. Treat slides as a focused teaching surface, not a document or self-paced course.
 
-## Set the operating frame
+## Resolve the operating frame
 
-Before implementation, establish the learning objective, learner age/level, lesson duration, and target display device. Ask the user to specify the **class**, **lesson date**, and **week** before creating a new deck; do not silently invent these filing details. For a new lesson, ask what the previous lesson covered and how this lesson should continue it. Use the preceding deck and its notes when available; otherwise ask the user for the prerequisite knowledge, recently taught content, and any misconceptions to revisit.
+Infer before asking. Use the explicit request, target lesson folder, recent same-class decks, `copu_classes_full.json`, timetable, and workspace defaults in that order. Establish the class, objective, prior learning, lesson date, duration, week, language level, target viewport, and requested deliverables. Ask one concise question only when unresolved ambiguity materially changes the result. Never invent a class.
 
-Reserve the first **5–10 minutes** of every new lesson for retrieval and memory reinforcement. Create a compact refresh sequence that asks students to recall and apply essential prior learning before introducing new content. Do not reteach the whole previous lesson: use 2–4 short prompts, include at least one that requires explanation or application, reveal/correct after thinking time, and use the evidence to bridge explicitly into the new objective.
+Lesson continuity is part of the operating frame, not a decorative opener. Some lessons happen offline or outside this app, so local deck history may be incomplete. When the most recent same-class files do not clearly establish the previous lesson, ask the teacher what was taught before, what students seemed to understand, and what must be bridged into the new lesson.
 
-Choose one viewport and design at that exact size before adding responsive behavior. Default to `1366 × 768`, 16:9 landscape, for a classroom projector/interactive panel if no device is specified. Use these alternatives only when appropriate:
+Default to `1366 × 768`, 16:9. Continue at `1280 × 665` when the class's existing deck uses that viewport. Fix the canvas at the selected size, scale it to the browser window, and keep all essential content and controls above the fold.
 
-| Display | Viewport |
-| --- | --- |
-| Classroom display/projector | `1366 × 768` |
-| 1080p classroom screen | `1920 × 1080` |
-| `laptop` (teacher laptop) | viewport: `1280 × 665`; DPR: `1.50`; screen: `1280 × 800` |
-| Student tablet | `1024 × 768` |
+For Form 1 classes, `1 Devotion` / `class-1d`, and `2 Devotion` / `class-2d`, design for laptop-to-smart-TV projection rather than a smartboard unless evidence says otherwise. Prefer shorter visible copy, larger interaction targets, stronger contrast, and more slides over dense text. Treat text legibility as a content requirement.
 
-Set a fixed deck canvas to the selected viewport (or its 16:9 equivalent), use CSS/Tailwind to scale it to the available window, and verify at the target dimensions. Keep controls large enough for a teacher at the front of the room. Do not allow important text, answers, or controls below the fold.
-
-## Organize the workspace
-
-Keep the skill and generated decks separate. Create each new deck at:
+Create work at:
 
 ```text
 decks/<class-slug>/<YYYY>/week-<NN>/<YYYY-MM-DD>-<topic-slug>/
@@ -35,88 +26,66 @@ decks/<class-slug>/<YYYY>/week-<NN>/<YYYY-MM-DD>-<topic-slug>/
 └── notes.md
 ```
 
-Use lowercase hyphenated slugs (for example, `year-7-mathematics`) and ISO dates. Store deck-specific images, audio, and data in that deck's `assets/` folder. Put reusable visual assets and starter decks in `templates/`, never inside a particular class or week. Keep `notes.md` teacher-facing: objective, slide map, answers, misconceptions, and delivery notes.
+Keep worksheets and keys aligned to the deck in the same lesson folder. Keep reusable assets in `templates/`.
 
-Use a template when it matches the task. Templates should supply the fixed canvas, Tailwind setup, slide navigation, accessible controls, and proven formative-interaction components; they must not impose lesson content or add decorative clutter. Start with a small `templates/teacher-led-html/` baseline and add specialised templates only after a pattern has succeeded in more than one deck.
+## Build a compact context pack
 
-## Use the class profile source
+Before drafting, inspect the most recent relevant same-class deck and notes. Capture internally: objective, prerequisite knowledge, prior coverage, likely misconception, class-level scaffolding need, duration, display, source evidence, and durable preferences from `learning/user-preferences.md`. Do not make the user restate discoverable context.
 
-Treat the workspace-root [copu_classes_full.json](../copu_classes_full.json) as the source of truth for class codes, roster, timetable, and PPSA 2026 class data. Match the requested class to the file before building. Use its timetable to check the lesson date and its class-level distribution to decide how much modelling, guided practice, repetition, and extension the deck needs. Never infer an individual student's ability, behaviour, or likely answer from their score or tier.
+Read [references/class-data.md](references/class-data.md) before using `copu_classes_full.json`. Use aggregate data only. Never embed rosters, names, individual scores, tiers, or the class JSON in a publishable deck. Use `teacher-tools/name-picker/index.html` in a private teacher window when needed.
 
-Use these stated language targets unless the user overrides them: **Form 1: A2 Revise**; **Form 2: A2 High**. Adapt vocabulary, sentence frames, reading/listening load, and scaffolding to the target, while differentiating through task design, worked examples, prompts, and optional extension—not public student labels.
+Use Form 1 **A2 Revise** and Form 2 **A2 High** language targets unless the user overrides them. Differentiate through modelling, prompts, task demand, and optional extension—not public labels.
 
-Do **not** embed real student names, a roster, or the class JSON in any deck that may be committed or published. Use the separate local-only teacher tool at `teacher-tools/name-picker/index.html` for real-name selection. It lets the teacher choose the JSON file on their device, choose a class, draw names without repeats, and reset the draw. Keep the picker in a private laptop window; the public slide may show a neutral prompt or a temporary alias only. Do not fetch the JSON at presentation time, store it remotely, or include other classes' data.
+## Ground grammar accurately
 
-See [references/class-data.md](references/class-data.md) before using class data.
-
-## Ground grammar lessons in the local book
-
-For grammar or language-form lessons, use the workspace-local `embeddings.jsonl` as a private reference before writing explanations, examples, or feedback. Run:
+For grammar or language-form lessons, query the private workspace-root `grammar for english teachers.md.md` before writing explanations, examples, distractors, or feedback:
 
 ```text
-node instructional-slide-decks/scripts/search-grammar-book.mjs "<grammar topic>"
+node instructional-slide-decks/scripts/search-grammar-book.mjs "<topic or contrast>" --objective "<learning objective>" --misconception "<likely error>" --limit 5
 ```
 
-Read the most relevant returned chunks, then translate the guidance into concise A2-appropriate teaching moves. Use the book to check accuracy; do not copy long passages into slides or publish the source file. The JSONL contains source text plus 3,072-dimensional vectors. Use vector similarity only when a query embedding generated by the same embedding model is available; otherwise use the bundled local text search.
+Run separate queries for the central rule, contrast, and likely misconception. Read the strongest distinct heading paths and adjacent passages; record the headings and line numbers in `notes.md`. Prefer explanatory and learner-difficulty sections over index entries, contents tables, or answer keys. Translate evidence into concise original A2-appropriate teaching; do not publish the book or copy long passages.
 
-## Plan the teaching sequence
+If no relevant evidence appears after related terminology and misconception queries, inspect the table of contents and headings directly. Ask for another source or permission to proceed without book grounding only after both routes fail.
 
-Write a slide map before building. Start a new lesson with its 5–10-minute retrieval refresh, then make the continuity clear: prior knowledge → bridge to the new idea → guided example → one check → feedback/correction → next idea. Each slide must advance one visible teaching move: orient, elicit, model, practise, check, correct, apply, or retrieve.
+## Ground non-grammar English pedagogy
 
-Apply these rules:
+For English lessons or assessments outside grammar, such as listening, reading, writing, speaking, vocabulary, genre, comprehension, test design, or rubrics, do not rely on memory alone when the local materials do not cover the pedagogical decision. Search authoritative web sources, official curriculum or exam guidance, or reputable language-teaching references. Record sources in `notes.md`, then adapt the findings into concise A2-appropriate activities, prompts, and teacher notes.
 
-- Put one learning question or task on every instructional slide. It can be explicit (for example, “Which strategy is more efficient?”) or an action prompt (“Predict the next number”).
-- Keep the slide answerable from what students can see or have just learned. Avoid multi-part questions unless the slide is a deliberate structured activity.
-- Use one concept, worked step, example, comparison, or decision per slide. Split dense material into a sequence.
-- Use progressive disclosure for model answers and procedures. Reveal the next step only after students have had thinking time.
-- Include planned wait time and teacher prompts in presenter notes or discreet teacher-only cues—not in student-facing clutter.
-- End with a brief retrieval or transfer question that checks the stated objective.
+## Plan the learning sequence
 
-See [references/instructional-design.md](references/instructional-design.md) for the detailed sequencing and cognitive-load checks.
+Read [references/instructional-design.md](references/instructional-design.md) while mapping or reviewing a lesson.
 
-## Design the student-facing surface
+Reserve the first 5–10 minutes of a new lesson for 2–4 retrieval prompts, including at least one explanation or application. Bridge the evidence explicitly into the new objective rather than reteaching the prior lesson.
 
-Remove everything that does not improve the current teaching move: decorative graphics, repeated prose, dense labels, redundant instructions, and generic navigation chrome.
+Sequence prior knowledge → bridge → model → guided practice → check → explanatory correction → transfer. Give each slide one visible teaching move and one dominant learning question or action. Split dense ideas instead of shrinking type. Keep teacher talk tracks, wait time, anticipated responses, and transitions in `notes.md`.
 
-Use visual hierarchy deliberately: one dominant question/task, a small amount of supporting evidence, and a single obvious next action. Prefer diagrams, worked examples, and manipulable representations when they directly support the concept. Ensure readable contrast and large type from the back of the room.
+## Design the projected surface
 
-Design for pupils who are nearsighted (`rabun`) as a default: use at least 28 px for student-facing body copy, 34 px for questions, and 38 px for slide titles at the selected viewport. Use dark text on a light solid background or light text on a dark solid background; do not rely on muted gray text, thin strokes, color-only distinctions, or low-opacity surfaces for essential content. Keep answer choices and feedback at the same high-contrast standard.
+Use the smallest visual system that makes the teaching move obvious. Prefer one composition, strong hierarchy, high contrast, and direct examples over decorative panels or generic chrome. Use Tailwind CSS for layout and state styling, with custom CSS only for canvas scaling, reusable behavior, and necessary animation.
 
-Use Tailwind CSS for layout, spacing, typography, states, and responsive scaling. Keep custom CSS limited to deck-level scaling, animation timing, and genuinely reusable behavior. Build keyboard navigation (`ArrowLeft`/`ArrowRight`, `Space`) plus visible previous/next controls. Preserve a clear current-slide indicator; do not show a distracting global UI.
+Design for pupils who are nearsighted by default: at least 28 px body text, 34 px questions, and 38 px slide titles at the target viewport. Do not rely on color alone, muted gray, thin strokes, low-opacity text, or interaction below the navigation safe zone.
 
-## Add formative interactivity
+Support `ArrowLeft`, `ArrowRight`, and `Space`, plus visible previous/next controls and a clear slide indicator.
 
-Use interactions to reveal student thinking to the teacher, not as decoration. Prefer low-friction whole-class routines the teacher can facilitate from one device:
+## Add formative interactions
 
-- **Predict, then reveal:** pause for a response; reveal the answer and why.
-- **Vote or choose:** selectable options, a confidence check, then teacher-led feedback.
-- **Sort, match, or sequence:** drag/tap items; provide a reset and an explicit check/reveal action.
-- **Complete the step:** students propose a missing calculation, word, label, or reason; reveal a model response.
-- **Spot the error:** show a plausible misconception and let students identify/correct it.
+Read [references/formative-interactions.md](references/formative-interactions.md) when adding interactions. Use the smallest interaction that reveals useful thinking: predict/reveal, choose, order, categorise, complete, or error analysis.
 
-Each interaction needs an answer state, a reset path, and feedback that explains the reasoning. Do not use scores, timers, confetti, or competitive mechanics unless they serve the lesson objective. For non-digital participation, make the response method explicit (think-pair-share, mini-whiteboards, fingers, hand signal) and keep the screen interaction optional.
+Every interaction needs a prompt, response path, teacher-controlled check or reveal, explanatory feedback, reset, keyboard access, and non-digital fallback. Visible controls that do not change state are failed interactions, not decoration. Refactor inherited slide code or shared button handlers when needed so the actual click and keyboard paths work. Avoid scores, timers, confetti, accounts, and competitive mechanics unless they directly serve the objective.
 
-See [references/formative-interactions.md](references/formative-interactions.md) for implementation patterns and accessibility requirements.
+## Align worksheets
 
-## Build and verify
+When a worksheet is requested, also use the `worksheet-assessment-design` skill. Default unspecified administration to brief, individual, formative, ungraded, teacher-marked work with ordinary classroom supports; record the assumption rather than stopping the build.
 
-Deliver a self-contained HTML deck (or the project format the user requests) with Tailwind, clean semantic structure, and minimal dependencies. Keep lesson content separate from rendering/state code where practical.
+Derive worksheet outcomes from the deck objective and taught practice. Build the blueprint and key/rubric together. Use fresh examples, sample important outcomes more than once when practical, and keep learner material separate from scoring guidance. Ensure slide instruction, exit evidence, worksheet items, and scoring rules make the same learning claim.
 
-Before handoff, verify:
+## Verify before delivery
 
-- The exact target viewport has no clipping, overlap, tiny text, or hidden controls.
-- Inspect every slide at the target viewport individually, including answer-revealed states. Reserve a bottom safe zone above navigation chrome; never place teacher cues or feedback there unless the content area has been shortened to leave clear separation. If a slide is dense, remove projected teacher-only text or move it to `notes.md` before reducing type size.
-- Every slide has one purposeful question/task and no unnecessary visual or textual element.
-- The sequence follows the objective and makes each new step depend on prior slides.
-- Keyboard, click/tap, answer reveal, reset, and slide navigation work.
-- Interactive checks have meaningful feedback and can be run by one teacher on a shared display.
+Inspect every slide at the exact viewport, including answer, error, reset, and final states. Fix clipping, overlap, wrapping, below-fold content, tiny text, broken focus, inaccessible controls, and navigation faults. Check that every slide advances the objective and that feedback explains the reasoning.
 
-## Improve the skill through use
+For a worksheet, verify outcome coverage, item clarity, answer defensibility, distractor plausibility, scoring consistency, fairness, accessibility, and the stated limits of an unpiloted instrument. Cross-check all answers against the learner version.
 
-After making or revising a deck, identify any reusable lesson from the build, visual check, teacher feedback, or student response. When a lesson is repeatable and supported by evidence, update this skill in the same workspace so the next deck benefits.
+## Learn from use
 
-- Turn recurring problems into short, actionable rules; do not record one-off lesson content.
-- Add device measurements, proven interaction patterns, accessibility constraints, and review checks when they recur.
-- Prefer editing the relevant section or reference over duplicating guidance.
-- Preserve the skill's core teacher-led, low-clutter purpose and validate its required frontmatter after every update.
-- Tell the user what was improved and why whenever the skill changes.
+When the user comments on an artifact or reports student response, read [references/feedback-learning.md](references/feedback-learning.md). Apply requested revisions, record the evidence, and update durable preferences without waiting for the phrase “update the skill.” Promote only well-supported, reusable lessons; do not turn one-off content choices into universal rules. Validate the skill after any change and briefly disclose durable improvements to the user.

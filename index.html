@@ -11,14 +11,20 @@
       .wrap { position: relative; z-index: 1; max-width: 1040px; margin: 0 auto; padding: 3rem 1.5rem 4rem; }
       header h1 { font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -.04em; margin: 0 0 .4rem; }
       header p { margin: 0; color: #52657d; max-width: 60ch; }
-      .rule-waves { position: fixed; inset: 0; z-index: 0; overflow: hidden; color: #1f5f9e; font-weight: 800; letter-spacing: -.075em; line-height: .73; opacity: .26; pointer-events: none; user-select: none; }
+      .rule-waves { position: fixed; inset: 0; z-index: 0; overflow: hidden; color: #1f5f9e; font-weight: 800; letter-spacing: -.075em; line-height: .73; opacity: .3; pointer-events: none; user-select: none; }
       .rule-wave { position: absolute; display: block; width: max-content; white-space: nowrap; font-size: clamp(5rem, 14vw, 15rem); filter: blur(.25px); transform-origin: center; }
-      .rule-wave { animation: worm-rule 30s ease-in-out infinite alternate; }
+      .rule-wave { animation: worm-rule 30s ease-in-out infinite alternate, worm-colour 30s linear infinite alternate; }
       @keyframes worm-rule {
         0% { transform: translate3d(-30vw, 6vh, 0) rotate(-15deg) skewX(-9deg); }
         32% { transform: translate3d(-6vw, 26vh, 0) rotate(8deg) skewX(10deg); }
         68% { transform: translate3d(-42vw, 59vh, 0) rotate(-7deg) skewX(-12deg); }
         100% { transform: translate3d(-10vw, 82vh, 0) rotate(14deg) skewX(8deg); }
+      }
+      @keyframes worm-colour {
+        0%, 31% { color: #1f5f9e; }
+        33%, 67% { color: #087f8c; }
+        69%, 99% { color: #7048a8; }
+        100% { color: #a85b00; }
       }
       .filters { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin: 1.75rem 0 1rem; }
       .filters select {
@@ -53,7 +59,7 @@
       .empty { padding: 2.5rem 1rem; text-align: center; color: #52657d; background: #fff; border: 1px dashed #c9d6e4; border-radius: .9rem; }
       .reset { display: none; font: inherit; font-size: .85rem; background: #fff; border: 1px solid #c9d6e4; border-radius: .55rem; padding: .45rem .7rem; color: #1f5f9e; cursor: pointer; }
       .reset:hover { background: #eef4fb; }
-      @media (prefers-reduced-motion: reduce) { .rule-wave { animation: none; transform: translate3d(-24vw, 32vh, 0) rotate(-9deg); } }
+      @media (prefers-reduced-motion: reduce) { .rule-wave { animation: none; color: #1f5f9e; transform: translate3d(-24vw, 32vh, 0) rotate(-9deg); } }
     </style>
   </head>
   <body>
